@@ -2,44 +2,54 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 df = pd.read_excel(r'C:\Users\asus\Desktop\Book1.xlsx')
-
 column_names = df.columns
 
-print("Select the columns for the line chart:")
+print("Select the columns for the line charts:")
 print("0: None (Finish selection)")
-
-# Store selected column names and their respective index range
-selected_columns = []
-
 for i, column in enumerate(column_names):
     print(f"{i + 1}: {column}")
+
+charts = []
+
+while True:
+    x_columns = []
+    y_columns = []
+
+    while True:
+        selection = int(input("Enter the number of the X column (or 0 to finish): "))
+        if selection == 0:
+            break
+        elif selection in range(1, len(column_names) + 1):
+            x_columns.append(str(column_names[selection - 1]))
+        else:
+            print("Invalid selection!")
 
     while True:
         selection = int(input("Enter the number of the Y column (or 0 to finish): "))
         if selection == 0:
             break
         elif selection in range(1, len(column_names) + 1):
-            column_name = str(column_names[selection - 1])
-            start_index = int(input(f"Enter the start index for {column_name}: "))
-            end_index = int(input(f"Enter the end index for {column_name}: "))
-            selected_columns.append((column_name, start_index, end_index))
-            break
+            y_columns.append(str(column_names[selection - 1]))
         else:
             print("Invalid selection!")
 
-# Plotting the line chart with index highlighting
-for y_column, start_index, end_index in selected_columns:
-    x_values = df[selected_columns[0][0]]  # Use the first selected column as X values
-    y_values = df[y_column]
-    plt.plot(x_values, y_values, marker='o')
+    if len(x_columns) > 0 and len(y_columns) > 0:
+        charts.append((x_columns, y_columns))
+    else:
+        print("No columns selected. Exiting...")
+        break
 
-    # Highlight the specified index range
-    plt.fill_between(x_values, y_values, where=(x_values >= start_index) & (x_values <= end_index), alpha=0.3)
+if len(charts) > 0:
+    fig, axes = plt.subplots(len(charts), 1, figsize=(10, 6 * len(charts)))
 
-plt.title('Line Chart')
-plt.xlabel('X Values')
-plt.ylabel('Y Values')
+    for i, (x_columns, y_columns) in enumerate(charts):
+        ax = axes[i] if len(charts) > 1 else axes
+        for y_column in y_columns:
+            ax.plot(df[x_columns[0]], df[y_column], marker='o')
+        ax.set_title('Line Chart')
+        ax.set_xlabel('X Values')
+        ax.set_ylabel('Y Values')
 
-plt.show()
-
+    plt.tight_layout()
+    plt.show()
 
