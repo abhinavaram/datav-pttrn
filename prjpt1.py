@@ -14,6 +14,7 @@ charts = []
 while True:
     x_columns = []
     y_columns = []
+    highlight_columns = []
 
     while True:
         selection = int(input("Enter the number of the X column (or 0 to finish): "))
@@ -30,48 +31,48 @@ while True:
             break
         elif selection in range(1, len(column_names) + 1):
             y_columns.append(str(column_names[selection - 1]))
+            highlight_choice = input(f"Do you want to highlight {column_names[selection - 1]}? (y/n): ")
+            if highlight_choice.lower() == 'y':
+                highlight_columns.append(str(column_names[selection - 1]))
         else:
             print("Invalid selection!")
 
     if len(x_columns) > 0 and len(y_columns) > 0:
-        charts.append((x_columns, y_columns))
+        charts.append((x_columns, y_columns, highlight_columns))
     else:
         print("No columns selected. Exiting...")
         break
 
 if len(charts) > 0:
     colors = ['blue', 'green', 'red', 'orange', 'purple', 'brown']
-    highlighted_colors = []
+    highlight_colors = ['yellow', 'cyan', 'magenta', 'lime', 'pink']
 
     fig, axes = plt.subplots(len(charts), 1, figsize=(10, 6 * len(charts)))
 
-    for i, (x_columns, y_columns) in enumerate(charts):
+    for i, (x_columns, y_columns, highlight_columns) in enumerate(charts):
         ax = axes[i] if len(charts) > 1 else axes
 
-        first_y_color = colors[i % len(colors)]
-        second_y_color = colors[(i + 1) % len(colors)]
-
         for j, y_column in enumerate(y_columns):
-            if j == 0:
-                ax.plot(df[x_columns[0]], df[y_column], color=first_y_color, marker='o')
-            elif j == 1:
-                ax.plot(df[x_columns[0]], df[y_column], color=second_y_color, marker='o')
+            color_index = j % len(colors)
+            ax.plot(df[x_columns[0]], df[y_column], color=colors[color_index], marker='o')
 
-        highlight_colors = list(set(colors) - set(highlighted_colors))
-        highlighted_colors.append(highlight_colors[0])
+        for j, highlight_column in enumerate(highlight_columns):
+            if j >= len(highlight_colors):
+                print(f"Not enough highlight colors defined. Skipping highlighting for {highlight_column}.")
+                continue
 
-        while True:
-            start_value = float(input("Enter the starting x-axis value (or 0 to finish): "))
-            if start_value == 0:
-                break
+            while True:
+                start_value = float(input(f"Enter the starting x-axis value for {highlight_column} (or 0 to finish): "))
+                if start_value == 0:
+                    break
 
-            end_value = float(input("Enter the ending x-axis value: "))
+                end_value = float(input(f"Enter the ending x-axis value for {highlight_column}: "))
 
-            start_index = df[df[x_columns[0]] == start_value].index[0]
-            end_index = df[df[x_columns[0]] == end_value].index[0]
+                start_index = df[df[x_columns[0]] == start_value].index[0]
+                end_index = df[df[x_columns[0]] == end_value].index[0]
 
-            # Plot the highlighted part with the specified color
-            ax.plot(df[x_columns[0]][start_index:end_index + 1], df[y_columns[0]][start_index:end_index + 1], color=highlight_colors[0], marker='o')
+                # Plot the highlighted part with the specified color
+                ax.plot(df[x_columns[0]][start_index:end_index + 1], df[highlight_column][start_index:end_index + 1], color=highlight_colors[j], marker='o')
 
         ax.set_title('Line Chart')
         ax.set_xlabel('X Values')
@@ -79,5 +80,6 @@ if len(charts) > 0:
 
     plt.tight_layout()
     plt.show()
+
 
 
